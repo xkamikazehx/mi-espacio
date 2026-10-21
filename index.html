@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi Espacio</title>
+<style>
+:root{--verde:#285943;--fondo:#f2f5f0;--texto:#263b2e}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--fondo);color:var(--texto)}
+header{background:var(--verde);color:white;text-align:center;padding:22px 12px}
+header h1{margin:0 0 6px}
+nav{display:flex;gap:8px;padding:12px;background:white;position:sticky;top:0;z-index:2}
+button{cursor:pointer;border:0;border-radius:8px;padding:11px 13px;background:var(--verde);color:white;font-size:15px}
+nav button{flex:1}
+nav button.activo{background:#163b2b}
+main{max-width:720px;margin:auto;padding:14px}
+.pantalla{display:none}
+.pantalla.activa{display:block}
+.card{background:white;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 2px 8px #0000000a}
+label{display:block;font-weight:bold;margin-top:10px}
+input:not([type=checkbox]):not([type=file]),select,textarea{width:100%;padding:11px;margin:6px 0 10px;border:1px solid #bbb;border-radius:7px;font-size:16px;background:white}
+input[type=checkbox]{width:auto}
+input[type=file]{display:block;max-width:100%;margin:8px 0 12px}
+textarea{min-height:75px}
+.numero{font-size:23px;font-weight:bold;color:var(--verde);margin-bottom:12px}
+.item{border-bottom:1px solid #ddd;padding:12px 0;overflow-wrap:anywhere}
+.item:last-child{border-bottom:0}
+.item button{margin:7px 5px 0 0}
+.secundario{background:#e1e9e2;color:var(--verde)}
+img.foto{max-width:100%;max-height:190px;display:block;margin:10px 0;border-radius:8px}
+small{color:#526358}
+</style>
+</head>
+<body>
+<header>
+<h1>Mi Espacio</h1>
+<p>Tu casa, tus plantas y tus gastos en un solo lugar</p>
+</header>
+<nav>
+<button class="activo" data-pantalla="inicio" type="button">Inicio</button>
+<button data-pantalla="gastos" type="button">Gastos</button>
+<button data-pantalla="plantas" type="button">Plantas</button>
+</nav>
+<main>
+<section id="inicio" class="pantalla activa">
+<h2>Bienvenido a tu espacio</h2>
+<div class="card">
+<h3>Total de gastos</h3><div id="total" class="numero">0,00 €</div>
+<h3>Gastos pendientes</h3><div id="pendientes" class="numero">0,00 €</div>
+<h3>Plantas registradas</h3><div id="cantidadPlantas" class="numero">0</div>
+<h3>Plantas que necesitan riego</h3><div id="necesitanRiego" class="numero">0</div>
+</div>
+<div class="card">
+<button type="button" onclick="mostrar('gastos')">Añadir un gasto</button>
+<button type="button" onclick="mostrar('plantas')">Ver mis plantas</button>
+</div>
+</section>
+
+<section id="gastos" class="pantalla">
+<h2>Gastos de casa</h2>
+<div class="card">
+<h3>Añadir gasto</h3>
+<form id="formGasto">
+<label for="nombreGasto">Nombre</label>
+<input id="nombreGasto" required placeholder="Ej. Electricidad">
+<label for="importeGasto">Importe en euros</label>
+<input id="importeGasto" type="number" min="0.01" step="0.01" required placeholder="Ej. 45,50">
+<label for="fechaGasto">Fecha</label>
+<input id="fechaGasto" type="date" required>
+<label for="categoriaGasto">Categoría</label>
+<select id="categoriaGasto">
+<option>Vivienda</option><option>Luz</option><option>Agua</option><option>Internet</option><option>Compra</option><option>Vehículos</option><option>Otros</option>
+</select>
+<label><input id="pagadoGasto" type="checkbox"> Pagado</label>
+<p><button type="submit">Guardar gasto</button></p>
+</form>
+</div>
+<div class="card"><h3>Mis gastos</h3><div id="listaGastos"></div></div>
+</section>
+
+<section id="plantas" class="pantalla">
+<h2>Mis plantas</h2>
+<div class="card">
+<h3>Añadir planta</h3>
+<form id="formPlanta">
+<label for="nombrePlanta">Nombre</label>
+<input id="nombrePlanta" required placeholder="Ej. Monstera">
+<label for="fotoPlanta">Fotografía (opcional)</label>
+<input id="fotoPlanta" type="file" accept="image/*">
+<label for="frecuencia">Regar cada cuántos días</label>
+<input id="frecuencia" type="number" min="1" max="365" value="7" required>
+<label for="notas">Notas de cuidados</label>
+<textarea id="notas" placeholder="Luz, abono, cuidados..."></textarea>
+<p><button type="submit">Guardar planta</button></p>
+</form>
+</div>
+<div class="card"><h3>Mi colección</h3><div id="listaPlantas"></div></div>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+function leer(clave){
+  try { const dato=JSON.parse(localStorage.getItem(clave)); return Array.isArray(dato)?dato:[]; }
+  catch(e){ return []; }
+}
+let gastos=leer("miEspacioGastos");
+let plantas=leer("miEspacioPlantas");
+
+function guardar(){
+  try{
+    localStorage.setItem("miEspacioGastos",JSON.stringify(gastos));
+    localStorage.setItem("miEspacioPlantas",JSON.stringify(plantas));
+    return true;
+  }catch(e){
+    alert("No se han podido guardar los datos. Puede que la fotografía sea demasiado grande.");
+    return false;
+  }
+}
+function mostrar(nombre){
+  document.querySelectorAll(".pantalla").forEach(s=>s.classList.toggle("activa",s.id===nombre));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("activo",b.dataset.pantalla===nombre));
+  actualizar();
+}
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>mostrar(b.dataset.pantalla)));
+
+function euros(n){return Number(n||0).toLocaleString("es-ES",{style:"currency",currency:"EUR"});}
+function escapar(t){
+  return String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function hoy(){
+  const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10);
+}
+$("fechaGasto").value=hoy();
+
+$("formGasto").addEventListener("submit",e=>{
+  e.preventDefault();
+  const gasto={
+    id:Date.now(),
+    nombre:$("nombreGasto").value.trim(),
+    importe:Number($("importeGasto").value),
+    fecha:$("fechaGasto").value,
+    categoria:$("categoriaGasto").value,
+    pagado:$("pagadoGasto").checked
+  };
+  if(!gasto.nombre||!Number.isFinite(gasto.importe)||gasto.importe<=0)return;
+  gastos.unshift(gasto);
+  if(!guardar()){gastos.shift();return;}
+  e.target.reset(); $("fechaGasto").value=hoy();
+  dibujarGastos(); actualizar(); alert("Gasto guardado.");
+});
+
+function dibujarGastos(){
+  const lista=$("listaGastos");
+  if(!gastos.length){lista.innerHTML="<p>Aún no has añadido ningún gasto.</p>";return;}
+  lista.innerHTML=gastos.map(g=>`
+    <div class="item">
+      <strong>${escapar(g.nombre)}</strong> — ${euros(g.importe)}<br>
+      <small>${escapar(g.fecha)} · ${escapar(g.categoria)} · ${g.pagado?"Pagado":"Pendiente de pago"}</small><br>
+      <button type="button" class="secundario" onclick="alternarPago(${g.id})">${g.pagado?"Marcar pendiente":"Marcar pagado"}</button>
+      <button type="button" onclick="borrarGasto(${g.id})">Eliminar</button>
+    </div>`).join("");
+}
+function alternarPago(id){
+  const g=gastos.find(x=>x.id===id); if(!g)return;
+  g.pagado=!g.pagado; guardar(); dibujarGastos(); actualizar();
+}
+function borrarGasto(id){
+  if(!confirm("¿Quieres eliminar este gasto?"))return;
+  gastos=gastos.filter(g=>g.id!==id); guardar(); dibujarGastos(); actualizar();
+}
+
+$("formPlanta").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const archivo=$("fotoPlanta").files[0];
+  let foto="";
+  if(archivo){
+    if(archivo.size>1200000){alert("La foto es demasiado grande. Elige una de menos de 1,2 MB.");return;}
+    try{foto=await archivoComoBase64(archivo);}catch(err){alert("No se ha podido cargar la foto.");return;}
+  }
+  const planta={
+    id:Date.now(),
+    nombre:$("nombrePlanta").value.trim(),
+    frecuencia:Math.max(1,Number($("frecuencia").value)||7),
+    notas:$("notas").value.trim(),
+    foto:foto,
+    ultimoRiego:hoy()
+  };
+  if(!planta.nombre)return;
+  plantas.unshift(planta);
+  if(!guardar()){plantas.shift();return;}
+  e.target.reset(); $("frecuencia").value=7;
+  dibujarPlantas(); actualizar(); alert("Planta guardada.");
+});
+function archivoComoBase64(archivo){
+  return new Promise((resolve,reject)=>{
+    const lector=new FileReader();
+    lector.onload=()=>resolve(lector.result);
+    lector.onerror=reject;
+    lector.readAsDataURL(archivo);
+  });
+}
+function diasDesde(fecha){
+  const a=new Date(fecha+"T12:00:00"); const b=new Date(hoy()+"T12:00:00");
+  return Math.floor((b-a)/86400000);
+}
+function necesitaRiego(p){return diasDesde(p.ultimoRiego||hoy())>=Number(p.frecuencia||7);}
+function dibujarPlantas(){
+  const lista=$("listaPlantas");
+  if(!plantas.length){lista.innerHTML="<p>Aún no has añadido ninguna planta.</p>";return;}
+  lista.innerHTML=plantas.map(p=>`
+    <div class="item">
+      <strong>${escapar(p.nombre)}</strong><br>
+      <small>Riego cada ${Number(p.frecuencia)} días · Último riego: ${escapar(p.ultimoRiego||"Sin dato")}</small>
+      ${necesitaRiego(p)?'<p><strong>Necesita riego</strong></p>':'<p>Riego al día</p>'}
+      ${p.foto?`<img class="foto" src="${p.foto}" alt="Foto de ${escapar(p.nombre)}">`:""}
+      ${p.notas?`<p>${escapar(p.notas)}</p>`:""}
+      <button type="button" onclick="regarPlanta(${p.id})">La he regado hoy</button>
+      <button type="button" onclick="borrarPlanta(${p.id})">Eliminar</button>
+    </div>`).join("");
+}
+function regarPlanta(id){
+  const p=plantas.find(x=>x.id===id); if(!p)return;
+  p.ultimoRiego=hoy(); guardar(); dibujarPlantas(); actualizar();
+}
+function borrarPlanta(id){
+  if(!confirm("¿Quieres eliminar esta planta?"))return;
+  plantas=plantas.filter(p=>p.id!==id); guardar(); dibujarPlantas(); actualizar();
+}
+function actualizar(){
+  $("total").textContent=euros(gastos.reduce((s,g)=>s+Number(g.importe||0),0));
+  $("pendientes").textContent=euros(gastos.filter(g=>!g.pagado).reduce((s,g)=>s+Number(g.importe||0),0));
+  $("cantidadPlantas").textContent=plantas.length;
+  $("necesitanRiego").textContent=plantas.filter(necesitaRiego).length;
+}
+dibujarGastos(); dibujarPlantas(); actualizar();
+</script>
+</body>
+</html>
