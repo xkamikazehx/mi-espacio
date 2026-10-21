@@ -1,0 +1,13 @@
+
+{
+  "id": "/mi-espacio/",
+  "name": "Mi Espacio",
+  "short_name": "Mi Espacio",
+  "description": "Gastos de casa y cuidado de plantas",
+  "start_url": "/mi-espacio/",
+  "scope": "/mi-espacio/",
+  "display": "standalone",
+  "background_color": "#f2f5f0",
+  "theme_color": "#285943",
+  "lang": "es"
+}
